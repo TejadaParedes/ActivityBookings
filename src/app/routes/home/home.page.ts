@@ -1,9 +1,11 @@
 import {
   ChangeDetectionStrategy,
   Component,
+  InputSignal,
   Signal,
   WritableSignal,
   inject,
+  input,
   signal,
 } from '@angular/core';
 // import { Meta, Title } from '@angular/platform-browser';
@@ -14,14 +16,17 @@ import { ActivityComponent } from './activity.component';
 import { HomeService } from './home.service';
 import { Activity } from '@domain/activity.type';
 import { FavoritesStore } from '@state/favorites.store';
+import { FilterWidget } from '@ui/filter.widget';
+import { SortOrders } from '@domain/filter.type';
 
 @Component({
   standalone: true,
-  imports: [ActivityComponent],
+  imports: [ActivityComponent, FilterWidget],
   template: `
     <article>
       <header>
         <h2>Activities</h2>
+        <lab-filter />
       </header>
       <main>
         @for (activity of activities(); track activity.id) {
@@ -41,6 +46,13 @@ import { FavoritesStore } from '@state/favorites.store';
         <mark>{{ favorites.length }}</mark>
         favorites.
       </small>
+      <small>
+        Filtering by
+        <mark>{{ search() }}</mark>
+        , order by
+        <mark>{{ orderBy() }} {{ sort() }}</mark>
+        favorites.
+      </small>
     </footer>
   `,
   styles: ``,
@@ -53,6 +65,10 @@ export default class HomePage {
   #service = inject(HomeService);
 
   #favoriteStore = inject(FavoritesStore);
+
+  search: InputSignal<string | undefined> = input<string>();
+  orderBy: InputSignal<string | undefined> = input<string>();
+  sort: InputSignal<SortOrders | undefined> = input<SortOrders>();
 
   activities: Signal<Activity[]> = toSignal(this.#service.getActivities(), {
     initialValue: [],
